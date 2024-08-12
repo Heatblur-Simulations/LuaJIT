@@ -14,3 +14,44 @@ Please point your favorite browser to:
 
  doc/luajit.html
 
+# Heatblur
+
+This is a mirror of the official LuaJIT repository, including Heatblur specific
+modifications for our modules.
+
+## Modifications
+
+LuaJIT, by default, does not support loading Lua-files from Unicode paths, such
+as
+
+```lua
+local file = require('你好')
+```
+
+or also when `package.path` contains base paths like `C:/Users/你好/SavedGames`.
+
+LuaJIT relies on the platforms default encoding. For Windows, this happens to
+not support UTF-8 or similar. The underlying C-code behind `require` can be
+found in `src/lib_io.c` line `83` method `io_file_open`, which is based on using
+`fopen`.
+
+We _fix_ the issue by using the platform specific `_wfopen` variant instead.
+Going platform dependent is okay for us, since we only target Windows anyways.
+
+## Building and Installing
+
+Follow the instructions in `doc/install.html` (also see [online version](http://luajit.org/install.html)).
+
+It consists of opening the repository folder in **x_64_x86 Cross Tools Command Prompt for VS 2022**:
+
+![Prompt](https://i.imgur.com/XUNy7cG.png)
+
+Navigating into the `src` subfolder and executing the `msvcbuild` bat.
+
+The script generates a bunch of files that have to be copied into the module repositories (e.g. **anvil**).
+
+Copy:
+
+* all `lua` files from `LuaJIT/src/jit` to `anvil/ext/luajit/bin/lua/jit`
+* all `lib`, `dll` and `exe` files from `LuaJIT/src` to `anvil/ext/luajit/bin`
+* all `h` and `hpp` files from `LuaJIT/src` to `anvil/ext/luajit/include`
