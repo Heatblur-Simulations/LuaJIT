@@ -1,5 +1,4 @@
-README for LuaJIT 2.1
----------------------
+# README for LuaJIT 2.1
 
 LuaJIT is a Just-In-Time (JIT) compiler for the Lua programming language.
 
@@ -12,12 +11,12 @@ See full Copyright Notice in the COPYRIGHT file or in luajit.h.
 Documentation for LuaJIT is available in HTML format.
 Please point your favorite browser to:
 
- doc/luajit.html
+**doc/luajit.html**
 
 # Heatblur
 
 This is a mirror of the official LuaJIT repository, including Heatblur specific
-modifications for our modules.
+modifications for our modules in the branch `windows_unicode`.
 
 ## Modifications
 
