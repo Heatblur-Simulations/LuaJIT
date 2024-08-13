@@ -41,9 +41,9 @@ Going platform dependent is okay for us, since we only target Windows anyways.
 
 Follow the instructions in `doc/install.html` (also see [online version](http://luajit.org/install.html)).
 
-It consists of opening the repository folder in **x_64_x86 Cross Tools Command Prompt for VS 2022**:
+It consists of opening the repository folder in **x86_x64 Cross Tools Command Prompt for VS 2022**:
 
-![Prompt](https://i.imgur.com/XUNy7cG.png)
+![Prompt](https://i.imgur.com/veM8bZA.png)
 
 Navigating into the `src` subfolder and executing the `msvcbuild` bat.
 
