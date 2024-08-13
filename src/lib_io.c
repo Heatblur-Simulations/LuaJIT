@@ -26,6 +26,8 @@
 #include "lj_ff.h"
 #include "lj_lib.h"
 
+#include <windows.h>
+
 /* Userdata payload for I/O file. */
 typedef struct IOFileUD {
   FILE *fp;		/* File handle. */
@@ -82,11 +84,28 @@ static IOFileUD *io_file_new(lua_State *L)
 
 static IOFileUD *io_file_open(lua_State *L, const char *mode)
 {
-  const char *fname = strdata(lj_lib_checkstr(L, 1));
+  const char *file_path = strdata(lj_lib_checkstr(L, 1));
   IOFileUD *iof = io_file_new(L);
-  iof->fp = fopen(fname, mode);
+
+  // Use (windows-dependent) _wfopen instead of fopen to support Unicode paths
+  wchar_t* file_path_wide;
+  wchar_t* mode_wide;
+  {
+    int length = MultiByteToWideChar(CP_UTF8, 0, file_path, -1, NULL, 0);
+    file_path_wide = (wchar_t*) malloc(length * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, file_path, -1, file_path_wide, length);
+  }
+  {
+    int length = MultiByteToWideChar(CP_UTF8, 0, mode, -1, NULL, 0);
+    mode_wide = (wchar_t*) malloc(length * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, mode, -1, mode_wide, length);
+  }
+  iof->fp = _wfopen(file_path_wide, mode_wide);
+  free(file_path_wide);
+  free(mode_wide);
+
   if (iof->fp == NULL)
-    luaL_argerror(L, 1, lj_strfmt_pushf(L, "%s: %s", fname, strerror(errno)));
+    luaL_argerror(L, 1, lj_strfmt_pushf(L, "%s: %s", file_path, strerror(errno)));
   return iof;
 }
 
@@ -408,12 +427,27 @@ LJLIB_PUSH(top-2) LJLIB_SET(!)  /* Set environment. */
 
 LJLIB_CF(io_open)
 {
-  const char *fname = strdata(lj_lib_checkstr(L, 1));
+  const char *file_path = strdata(lj_lib_checkstr(L, 1));
   GCstr *s = lj_lib_optstr(L, 2);
   const char *mode = s ? strdata(s) : "r";
   IOFileUD *iof = io_file_new(L);
-  iof->fp = fopen(fname, mode);
-  return iof->fp != NULL ? 1 : luaL_fileresult(L, 0, fname);
+
+  // Use (windows-dependent) _wfopen instead of fopen to support Unicode paths
+  wchar_t* file_path_wide;
+  wchar_t* mode_wide;
+  {
+    int length = MultiByteToWideChar(CP_UTF8, 0, file_path, -1, NULL, 0);
+    file_path_wide = (wchar_t*) malloc(length * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, file_path, -1, file_path_wide, length);
+  }
+  {
+    int length = MultiByteToWideChar(CP_UTF8, 0, mode, -1, NULL, 0);
+    mode_wide = (wchar_t*) malloc(length * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, mode, -1, mode_wide, length);
+  }
+  iof->fp = _wfopen(file_path_wide, mode_wide);
+  
+  return iof->fp != NULL ? 1 : luaL_fileresult(L, 0, file_path);
 }
 
 LJLIB_CF(io_popen)

@@ -23,6 +23,8 @@
 #include "lj_bcdump.h"
 #include "lj_parse.h"
 
+#include <windows.h>
+
 /* -- Load Lua source code and bytecode ----------------------------------- */
 
 static TValue *cpparser(lua_State *L, lua_CFunction dummy, void *ud)
@@ -102,7 +104,16 @@ LUALIB_API int luaL_loadfilex(lua_State *L, const char *filename,
   int status;
   const char *chunkname;
   if (filename) {
-    ctx.fp = fopen(filename, "rb");
+    
+    // Use (windows-dependent) _wfopen instead of fopen to support Unicode paths
+    wchar_t* file_path_wide;
+    {
+      int length = MultiByteToWideChar(CP_UTF8, 0, filename, -1, NULL, 0);
+      file_path_wide = (wchar_t*) malloc(length * sizeof(wchar_t));
+      MultiByteToWideChar(CP_UTF8, 0, filename, -1, file_path_wide, length);
+    }
+    ctx.fp = _wfopen(file_path_wide, L"rb");
+
     if (ctx.fp == NULL) {
       lua_pushfstring(L, "cannot open %s: %s", filename, strerror(errno));
       return LUA_ERRFILE;

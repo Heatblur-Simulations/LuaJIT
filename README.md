@@ -31,8 +31,8 @@ or also when `package.path` contains base paths like `C:/Users/你好/SavedGames
 
 LuaJIT relies on the platforms default encoding. For Windows, this happens to
 not support UTF-8 or similar. The underlying C-code behind `require` can be
-found in `src/lib_io.c` line `83` method `io_file_open`, which is based on using
-`fopen`.
+found around `src/lib_io.c`, `src/lib_package.c` and `src/li_load.c`, which are
+based on using `fopen`.
 
 We _fix_ the issue by using the platform specific `_wfopen` variant instead.
 Going platform dependent is okay for us, since we only target Windows anyways.

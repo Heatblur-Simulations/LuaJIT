@@ -17,6 +17,8 @@
 #include "lj_err.h"
 #include "lj_lib.h"
 
+#include <windows.h>
+
 /* ------------------------------------------------------------------------ */
 
 /* Error codes for ll_loadfunc. */
@@ -296,7 +298,15 @@ static int lj_cf_package_unloadlib(lua_State *L)
 
 static int readable(const char *filename)
 {
-  FILE *f = fopen(filename, "r");  /* try to open file */
+  // Use (windows-dependent) _wfopen instead of fopen to support Unicode paths
+  wchar_t* file_path_wide;
+  {
+    int length = MultiByteToWideChar(CP_UTF8, 0, filename, -1, NULL, 0);
+    file_path_wide = (wchar_t*) malloc(length * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, filename, -1, file_path_wide, length);
+  }
+  FILE *f = _wfopen(file_path_wide, L"r"); /* try to open file */
+  free(file_path_wide);
   if (f == NULL) return 0;  /* open failed */
   fclose(f);
   return 1;
